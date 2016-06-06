@@ -6,7 +6,7 @@ Backgammon playing AI implemented(*) with Java and libGDX
 
 ## Instructions
 - Click anywhere to roll the dice.
-- Select checker with left mouse click that you are playing with then place it according to dice with right click.
+- Select checker by pressing left mouse button that you want to play then place it according to dice by pressing right mouse button.
 - You can capture other players checkers.
 - General rules of backgammon implemented (or will be).
 
