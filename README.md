@@ -13,7 +13,7 @@ Backgammon playing AI implemented(*) with Java and libGDX
 - You can capture other players checkers.
 - If you have a captured checker it will be shown on center. 
 -- You can left click to captured checker and right click to place it according to dice.
-- To bearoff, select the checker with left click and place it onto area according to your color.
+- To bearoff, select the checker with left click and place it onto area on the right, according to your color.
 - General rules of backgammon is implemented.
 
 ## Screenshot
