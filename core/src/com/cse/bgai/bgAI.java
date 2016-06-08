@@ -41,6 +41,9 @@ public class bgAI extends ApplicationAdapter {
 
 	BitmapFont font;
 
+	// AI TEST
+	AI ai;
+
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
@@ -59,6 +62,9 @@ public class bgAI extends ApplicationAdapter {
 
 		font =  new BitmapFont();
 
+		// AI TEST
+		ai = new AI(board);
+
 		Gdx.input.setInputProcessor(new InputAdapter() {
 			public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 				if (button == Input.Buttons.LEFT) {
@@ -75,6 +81,8 @@ public class bgAI extends ApplicationAdapter {
 						isDiceRolled = true;
 
 						possibilityCheck();
+
+						if(!isWhite) { ai.listPossibleMoves(-1, dices); }
 					}
 
 					if(!toSelected && isDiceRolled && toIndex == 0) {
@@ -271,6 +279,8 @@ public class bgAI extends ApplicationAdapter {
 		fromSelected = false;
 		fromIndex = 0;
 		toIndex = 0;
+
+		currentlyPlayedDice = 0;
 
 		selector.setX(0);
 		selector.setY(0);

@@ -13,7 +13,7 @@ import java.util.ArrayList;
 public class Board {
 
     // logic
-    private int logicBoard[];
+    public int logicBoard[];
 
     public final int WHITE_CAPTURED_FIELD = 24;
     public final int BLACK_CAPTURED_FIELD = 25;
@@ -381,41 +381,45 @@ public class Board {
             if(color == 1) {                        // beyaz taþlar için
                 for(int j = 0; j < 24; j++) {       // tahtanýn tümünü kontrol et
 
-                    if(getColor(j) == 1) {      // eðer üzerinde olduðum taþ beyaz ise
+                    if(j + selected < 24) {
+                        if (getColor(j) == 1) {      // eðer üzerinde olduðum taþ beyaz ise
 
-                        if(canBearoff(1)) {
-                            return true;
-                        }
+                            if (canBearoff(1)) {
+                                return true;
+                            }
 
-                        // eðer zar ile ilerlediðimde gelen taþ
-                        // 1. siyah ve 1 tane ise
-                        // 2. boþ ise
-                        // 3. beyaz renkte ise
-                        // hamle yapmak mümkündür
-                        else if(logicBoard[j + selected] == -1
-                                || logicBoard[j + selected] == 0
-                                || getColor(j + selected) == 1) {
-                            return true;
+                            // eðer zar ile ilerlediðimde gelen taþ
+                            // 1. siyah ve 1 tane ise
+                            // 2. boþ ise
+                            // 3. beyaz renkte ise
+                            // hamle yapmak mümkündür
+                            else if (logicBoard[j + selected] == -1
+                                    || logicBoard[j + selected] == 0
+                                    || getColor(j + selected) == 1) {
+                                return true;
+                            }
                         }
                     }
                 }
             } else {
                 for(int j = 23; j >= 0; j--) {       // tahtanýn tümünü kontrol et
 
-                    if(getColor(j) == -1) {      // eðer üzerinde olduðum taþ beyaz ise
+                    if(j - selected > 0) {
+                        if(getColor(j) == -1) {      // eðer üzerinde olduðum taþ beyaz ise
 
-                        if(canBearoff(-1)) {
-                            return true;
-                        }
-                        // eðer zar ile ilerlediðimde gelen taþ
-                        // 1. siyah ve 1 tane ise
-                        // 2. boþ ise
-                        // 3. beyaz renkte ise
-                        // hamle yapmak mümkündür
-                        else if(logicBoard[j + selected] == 1
-                                || logicBoard[j + selected] == 0
-                                || getColor(j + selected) == -1) {
-                            return true;
+                            if(canBearoff(-1)) {
+                                return true;
+                            }
+                            // eðer zar ile ilerlediðimde gelen taþ
+                            // 1. siyah ve 1 tane ise
+                            // 2. boþ ise
+                            // 3. beyaz renkte ise
+                            // hamle yapmak mümkündür
+                            else if(logicBoard[j - selected] == 1
+                                    || logicBoard[j - selected] == 0
+                                    || getColor(j - selected) == -1) {
+                                return true;
+                            }
                         }
                     }
                 }
