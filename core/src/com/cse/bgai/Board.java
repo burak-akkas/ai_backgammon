@@ -178,6 +178,7 @@ public class Board {
         }
 
         // special cases
+        // captured
         Sprite whiteCaptureSprite = new Sprite(whiteCheckerTexture, 0, 0, 200, 200);
         whiteCaptureSprite.setSize(40, 40);
         whiteCaptureSprite.setBounds(335, 330, 40, 40);
@@ -189,19 +190,38 @@ public class Board {
         blackCaptureSprite.setBounds(335, 255, 40, 40);
         blackCaptureSprite.setPosition(335, 255);
         graphicBoard[25][0] = blackCaptureSprite;
+
+        // bearoff
+        Sprite whiteBearoffSprite = new Sprite(whiteCheckerTexture, 0, 0, 200, 200);
+        whiteBearoffSprite.setSize(40, 40);
+        whiteBearoffSprite.setBounds(710, 465, 40, 40);
+        whiteBearoffSprite.setPosition(710, 465);
+        graphicBoard[26][0] = whiteBearoffSprite;
+
+        Sprite blackBearoffSprite = new Sprite(blackCheckerTexture, 0, 0, 200, 200);
+        blackBearoffSprite.setSize(40, 40);
+        blackBearoffSprite.setBounds(710, 120, 40, 40);
+        blackBearoffSprite.setPosition(710, 120);
+        graphicBoard[27][0] = blackBearoffSprite;
     }
 
     public boolean reenter(int from, int to, int dice) {
-        int fromColor = getColor(from);
-        int toColor = getColor(to);
+
+        int fromColor = 0;
+
+        if(from == WHITE_CAPTURED_FIELD) {
+            fromColor = 1;
+        } else if(from == BLACK_CAPTURED_FIELD){
+            fromColor = -1;
+        } else {
+            return false;
+        }
+
+        int toColor = getColor(to); // 0
 
         if(fromColor == 1) { dice = -dice; };
 
-        int fieldSelector = 0;
-        if(fromColor == 1) { fieldSelector = WHITE_CAPTURED_FIELD; }
-        else { fieldSelector = BLACK_CAPTURED_FIELD; }
-
-        if(logicBoard[fieldSelector] != 0) {
+        if(logicBoard[from] != 0) {
             reenterMove(fromColor, dice);
         } else {
             return false;
@@ -214,7 +234,7 @@ public class Board {
         int fromColor = getColor(from);
         int toColor = getColor(to);
 
-        if(fromColor == 1) { dice = -dice; };
+        if(fromColor == 1) { dice = -dice; }
 
         int fieldSelector = 0;
         if(fromColor == 1) { fieldSelector = WHITE_CAPTURED_FIELD; }
@@ -231,16 +251,31 @@ public class Board {
             // its a capture move
             else if(fromColor != toColor && Math.abs(logicBoard[to]) == 1) {
                 captureMove(fromColor, from, to);
-            }
-            // its a bearoff move
-            else if(to == fieldSelector && canBearoff(fromColor)) {
-                bearoffMove(fromColor, from);
+            } else {
+                return false;
             }
         } else {
             return false;
         }
 
         return true;
+    }
+
+    public boolean bearoff(int from, int to) { // 0, 27 +
+        int fromColor = getColor(from); // -1 +
+
+        int fieldSelector = 0;
+        if(fromColor == 1) { fieldSelector = WHITE_BEAROFF_FIELD; }
+        else { fieldSelector = BLACK_BEAROFF_FIELD; } // fieldSelector = BLACK_BEAROFF_FIELD +
+
+        // 1st cond +,
+        if(to == fieldSelector && canBearoff(fromColor)) {
+            bearoffMove(fromColor, from);
+
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void normalMove(int color, int from, int to) {
@@ -286,7 +321,7 @@ public class Board {
             }
 
             logicBoard[-dice - 1]++;
-        } else {
+        } else { // -1
             logicBoard[BLACK_CAPTURED_FIELD]--;
 
             if(logicBoard[24 - dice] == 1) {
@@ -298,17 +333,109 @@ public class Board {
         }
     }
 
+    public boolean canReEnter(int color, ArrayList<Integer> dices) {
+
+        int selected = 0;
+
+        if(color == 1) { // white
+            for(int i = 0; i < dices.size(); i++) {
+                selected = dices.get(i);
+
+                if(getColor(selected - 1) == color || logicBoard[selected - 1] == 0 || logicBoard[selected - 1] == -color) {
+                    return true;
+                }
+            }
+        } else {
+            for(int i = 0; i < dices.size(); i++) {
+                selected = dices.get(i);
+
+                if(getColor(24 - selected) == color || logicBoard[24 - selected] == 0 || logicBoard[24 - selected] == -color) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public boolean mustReEnter(int color) {
+        int field = 0;
+
+        if(color == 1) { field = WHITE_CAPTURED_FIELD; }
+        else { field = BLACK_CAPTURED_FIELD; }
+
+        if(logicBoard[field] != 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean hasPossibleMoves(int color, ArrayList<Integer> dices) {
+
+        int selected = 0;
+
+        for(int i = 0; i < dices.size(); i++) {     // black 23->0
+            selected = dices.get(i);                // white 0->23
+
+            if(color == 1) {                        // beyaz taþlar için
+                for(int j = 0; j < 24; j++) {       // tahtanýn tümünü kontrol et
+
+                    if(getColor(j) == 1) {      // eðer üzerinde olduðum taþ beyaz ise
+
+                        if(canBearoff(1)) {
+                            return true;
+                        }
+
+                        // eðer zar ile ilerlediðimde gelen taþ
+                        // 1. siyah ve 1 tane ise
+                        // 2. boþ ise
+                        // 3. beyaz renkte ise
+                        // hamle yapmak mümkündür
+                        else if(logicBoard[j + selected] == -1
+                                || logicBoard[j + selected] == 0
+                                || getColor(j + selected) == 1) {
+                            return true;
+                        }
+                    }
+                }
+            } else {
+                for(int j = 23; j >= 0; j--) {       // tahtanýn tümünü kontrol et
+
+                    if(getColor(j) == -1) {      // eðer üzerinde olduðum taþ beyaz ise
+
+                        if(canBearoff(-1)) {
+                            return true;
+                        }
+                        // eðer zar ile ilerlediðimde gelen taþ
+                        // 1. siyah ve 1 tane ise
+                        // 2. boþ ise
+                        // 3. beyaz renkte ise
+                        // hamle yapmak mümkündür
+                        else if(logicBoard[j + selected] == 1
+                                || logicBoard[j + selected] == 0
+                                || getColor(j + selected) == -1) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     public boolean canBearoff(int color) {
 
         int counter = 0;
 
-        if(color == 1) {
+        if(color == 1 && logicBoard[WHITE_CAPTURED_FIELD] == 0) {
             for(int i = 18; i < 24; i++) {
                 if(getColor(i) == color) {
                     counter += logicBoard[i];
                 }
             }
-        } else {
+        } else if(color == -1 && logicBoard[BLACK_CAPTURED_FIELD] == 0){
             for(int i = 0; i < 6; i++) {
                 if(getColor(i) == color) {
                     counter += logicBoard[i];
@@ -316,7 +443,17 @@ public class Board {
             }
         }
 
-        if(Math.abs(counter) == 15) { return true; }
+        if(color == 1)
+        {
+            if ((Math.abs(counter) + logicBoard[WHITE_BEAROFF_FIELD]) == 15) {
+                return true;
+            }
+        } else if(color == -1) {
+            if ((Math.abs(counter) + logicBoard[BLACK_BEAROFF_FIELD]) == 15) {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -367,7 +504,7 @@ public class Board {
 
         for (int i = 0; i < 28; i++) {
             for(int j = 0; j < 15; j++) {
-
+            if(graphX == 0 && graphY == 0) {
                 //if(graphicBoard[i][j] != null) {
                 if (x > graphicBoard[i][j].getX() && x < graphicBoard[i][j].getX() + 50) {
                     if (y > graphicBoard[i][j].getY() && y < graphicBoard[i][j].getY() + 50) {
@@ -381,6 +518,10 @@ public class Board {
                         break;
                     }
                 }
+            } else {
+                break;
+            }
+
                 // }
             }
         }
@@ -410,7 +551,9 @@ public class Board {
 
         for(int i = 0; i < 28; i++) {
             for(int j = 0; j < 15; j++) {
-                /*if(graphicBoard[i][j] != null)*/ graphicBoard[i][j].draw(batch);
+                /*if(graphicBoard[i][j] != null)*/
+                if(i > 23 && j > 0) { break; }
+                else { graphicBoard[i][j].draw(batch); }
             }
         }
     }
