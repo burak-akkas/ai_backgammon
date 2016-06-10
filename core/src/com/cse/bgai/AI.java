@@ -46,31 +46,34 @@ public class AI {
                 }
             }
 
-        // TWO STEP
-        System.out.println("+ AI : RESULTS FOR 2-STEP MOVEMENT");
+        if(dices.size() == 2) {
+            // TWO STEP
+            System.out.println("+ AI : RESULTS FOR 2-STEP MOVEMENT");
 
-        selected = dices.get(0) + dices.get(1);
+            selected = dices.get(0) + dices.get(1);
 
-        for(int j = 23; j >= 0; j--) {
-            if(j - selected > 0) {
-                if(board.getColor(j) == -1) {
+            for(int j = 23; j >= 0; j--) {
+                if(j - selected > 0) {
+                    if(board.getColor(j) == -1) {
 
-                    if(board.canBearoff(-1)) {
-                        System.out.println("+ AI : BEAROFF MOVE FOUND FOR BLACK.");
-                    }
+                        if(board.canBearoff(-1)) {
+                            System.out.println("+ AI : BEAROFF MOVE FOUND FOR BLACK.");
+                        }
 
-                    else if(board.logicBoard[j - selected] == 1) {
-                        System.out.println("+ AI : CAPTURABLE WHITE PIECE FOUND = (BLACK, " + j + " -> " + (j - selected) + ")");
-                    } else if(board.logicBoard[j - selected] == 0) {
-                        System.out.println("+ AI : MOVE TO EMPTY FOUND = (BLACK, " + j + " -> " + (j - selected) + ")");
-                    } else if(board.getColor(j - selected) == -1) {
-                        System.out.println("+ AI : MOVE TO FRIEND FOUND = (BLACK, " + j + " -> " + (j - selected) + ")");
-                    } else {
-                        // will continue.
+                        else if(board.logicBoard[j - selected] == 1) {
+                            System.out.println("+ AI : CAPTURABLE WHITE PIECE FOUND = (BLACK, " + j + " -> " + (j - selected) + ")");
+                        } else if(board.logicBoard[j - selected] == 0) {
+                            System.out.println("+ AI : MOVE TO EMPTY FOUND = (BLACK, " + j + " -> " + (j - selected) + ")");
+                        } else if(board.getColor(j - selected) == -1) {
+                            System.out.println("+ AI : MOVE TO FRIEND FOUND = (BLACK, " + j + " -> " + (j - selected) + ")");
+                        } else {
+                            // will continue.
+                        }
                     }
                 }
             }
         }
+
 
     }
 }

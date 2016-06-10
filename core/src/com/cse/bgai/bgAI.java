@@ -72,6 +72,9 @@ public class bgAI extends ApplicationAdapter {
 					possibilityCheck();
 
 					if(!isDiceRolled) {
+
+						for(int i = 0; i < dices.size(); i++) { dices.remove(i); }
+
 						dice.throwDices();
 						board.generatePossibleMoves(dice.getDices());
 						dices = board.possibleMoves;
@@ -191,16 +194,37 @@ public class bgAI extends ApplicationAdapter {
 						System.out.println("YOU CANT REENTER WITH THIS DICES. SWITCHING PLAYER");
 
 						for(int i = 0; i < dices.size(); i++) { dices.remove(i); }
+
+						isWhite = !isWhite;
+						isDiceRolled = false;
+						currentlyPlayedDice = 0;
 					}
 
-				} else if(toIndex == 26 || toIndex == 27) { // bear-off move
+				} else if((toIndex == 26 && board.canBearoff(1)) || (toIndex == 27 && board.canBearoff(-1))) { // bear-off move
 
-					if(board.bearoff(fromIndex, toIndex)) {
+					if(toIndex == 27 && fromIndex < 6 && !isWhite /*&& dices.contains(fromIndex + 1)*/ ) {
 
-					currentlyPlayedDice = dices.get(0);
+						if(board.bearoff(fromIndex, toIndex)) {
+							//currentlyPlayedDice = dices.get(dices.indexOf(fromIndex + 1));
+							currentlyPlayedDice = dices.get(0);
 
-					dices.remove(0);
+							//dices.remove(dices.indexOf(fromIndex + 1));
+							dices.remove(0);
+						} else {
+							System.out.println("CANT BEAROFF (BLACK)");
+						}
 
+					} else if(toIndex == 26 && fromIndex >= 18 && isWhite /*&& dices.contains(24 - fromIndex)*/) {
+
+						if(board.bearoff(fromIndex, toIndex)) {
+							//currentlyPlayedDice = dices.get(dices.indexOf(24 - fromIndex));
+							currentlyPlayedDice = dices.get(0);
+
+							//dices.remove(dices.indexOf(24 - fromIndex));
+							dices.remove(0);
+						} else {
+							System.out.println("CANT BEAROFF (WHITE)");
+						}
 					} else {
 						System.out.println("NOT YOUR TURN.");
 					}
@@ -249,23 +273,31 @@ public class bgAI extends ApplicationAdapter {
 	}
 
 	public void possibilityCheck() {
-		// atýlan zar ile oyuncu hamle yapabiliyor mu?
+
 		int color = 0;
 		if(isWhite) { color = 1; } else { color = -1; }
 
 		if(isDiceRolled) {
-			if(board.mustReEnter(color)) {
+			if(board.canBearoff(1)) {
+				System.out.println("WHITE PLAYER CAN BEAROFF");
+			} else if(board.canBearoff(-1)) {
+				System.out.println("BLACK PLAYER CAN BEAROFF");
+			} else if(board.mustReEnter(color)) {
 				if(!board.canReEnter(color, dices)) {
 					System.out.println("REENTER NOT POSSIBLE. SWITCHING PLAYER.");
 
+					for(int i = 0; i < dices.size(); i++) { dices.remove(i); }
 					reset();
+					currentlyPlayedDice = 0;
 					isDiceRolled = false;
 					isWhite = !isWhite;
 				}
 			} else if(!board.hasPossibleMoves(color, dices)) {
 				System.out.println("NO POSSIBLE MOVES. SWITCHING PLAYER.");
 
+				for(int i = 0; i < dices.size(); i++) { dices.remove(i); }
 				reset();
+				currentlyPlayedDice = 0;
 				isDiceRolled = false;
 				isWhite = !isWhite;
 			} else {
@@ -280,7 +312,7 @@ public class bgAI extends ApplicationAdapter {
 		fromIndex = 0;
 		toIndex = 0;
 
-		currentlyPlayedDice = 0;
+		//currentlyPlayedDice = 0;
 
 		selector.setX(0);
 		selector.setY(0);

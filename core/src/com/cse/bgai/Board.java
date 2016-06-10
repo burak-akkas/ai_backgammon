@@ -304,9 +304,14 @@ public class Board {
         if(color == 1) { // white
             logicBoard[WHITE_BEAROFF_FIELD]++;
             logicBoard[from]--;
+
+            System.out.println("BEAROFFMOVE FOR WHITE");
+
         } else {        // black
             logicBoard[BLACK_BEAROFF_FIELD]++;
             logicBoard[from]++;
+
+            System.out.println("BEAROFFMOVE FOR BLACK");
         }
     }
 
@@ -464,7 +469,7 @@ public class Board {
     public int checkWinner() {
         if(logicBoard[WHITE_BEAROFF_FIELD] == 15) {
             return 1;
-        } else if(logicBoard[BLACK_BEAROFF_FIELD] == -15) {
+        } else if(logicBoard[BLACK_BEAROFF_FIELD] == 15) {
             return -1;
         } else {
             return 0;
@@ -472,6 +477,8 @@ public class Board {
     }
 
     public void generatePossibleMoves(int dice[]) {
+
+        for(int i = 0; i < possibleMoves.size(); i++) { possibleMoves.remove(i); }
 
         if(dice[0] == dice[1]) { // double
             possibleMoves.add(dice[0]);
