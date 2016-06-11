@@ -44,8 +44,8 @@ public class Dice {
     }
 
     public void throwDices() {
-        diceX = 1 + rn.nextInt(5);
-        diceY = 1 + rn.nextInt(5);
+        diceX = 1 + rn.nextInt(6);
+        diceY = 1 + rn.nextInt(6);
 
         switch (diceX) {
             case 1:

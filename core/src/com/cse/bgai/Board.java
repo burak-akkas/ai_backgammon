@@ -363,6 +363,23 @@ public class Board {
         return false;
     }
 
+    // AI FUNCTION : returns an integer (dice) to reenter with.
+    //             : if not, returns -1
+    public int canReEnterAI(ArrayList<Integer> dices) {
+
+        int selected = 0;
+
+        for(int i = 0; i < dices.size(); i++) {
+            selected = dices.get(i);
+
+            if(getColor(24 - selected) == -1 || logicBoard[24 - selected] == 0 || logicBoard[24 - selected] == 1) {
+                return selected;
+            }
+        }
+
+        return -1;
+    }
+
     public boolean mustReEnter(int color) {
         int field = 0;
 

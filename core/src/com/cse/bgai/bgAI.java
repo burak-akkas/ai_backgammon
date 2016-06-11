@@ -14,8 +14,13 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
+import javax.swing.*;
 import java.util.ArrayList;
 
 public class bgAI extends ApplicationAdapter {
@@ -30,6 +35,8 @@ public class bgAI extends ApplicationAdapter {
 	ArrayList<Integer> dices;
 	int currentlyPlayedDice = 0;
 
+	boolean isPlaying = true;
+
 	boolean fromSelected = false;
 	boolean toSelected = false;
 
@@ -38,6 +45,9 @@ public class bgAI extends ApplicationAdapter {
 
 	ShapeRenderer sr;
 	Rectangle selector;
+
+	Texture arrowTexture;
+	Sprite arrowSprite;
 
 	BitmapFont font;
 
@@ -62,12 +72,18 @@ public class bgAI extends ApplicationAdapter {
 
 		font =  new BitmapFont();
 
-		// AI TEST
+		arrowTexture = new Texture(Gdx.files.local("core/assets/arrow.png"));
+		arrowSprite = new Sprite(arrowTexture, 0, 0, 300, 213);
+		arrowSprite.setSize(50, 35);
+		arrowSprite.setBounds(300, 375, 50, 35);
+		arrowSprite.setPosition(300, 375);
+
+		// AI
 		ai = new AI(board);
 
 		Gdx.input.setInputProcessor(new InputAdapter() {
 			public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-				if (button == Input.Buttons.LEFT) {
+				if (button == Input.Buttons.LEFT && isWhite) {
 
 					possibilityCheck();
 
@@ -85,7 +101,7 @@ public class bgAI extends ApplicationAdapter {
 
 						possibilityCheck();
 
-						if(!isWhite) { ai.listPossibleMoves(-1, dices); }
+						//if(!isWhite) { ai.listPossibleMoves(-1, dices); }
 					}
 
 					if(!toSelected && isDiceRolled && toIndex == 0) {
@@ -104,7 +120,7 @@ public class bgAI extends ApplicationAdapter {
 					}
 				}
 
-				if(button == Input.Buttons.RIGHT) {
+				if(button == Input.Buttons.RIGHT && isWhite) {
 
 					if(fromSelected && !toSelected && isDiceRolled && toIndex == 0 ) {
 						rect.setPosition(Gdx.input.getX(), Gdx.graphics.getWidth() - 132 - Gdx.input.getY());
@@ -132,10 +148,13 @@ public class bgAI extends ApplicationAdapter {
 		update();
 
 		batch.begin();
-			board.draw(batch);
-			dice.getFirstSprite().draw(batch);
-			dice.getSecondSprite().draw(batch);
+			drawDice();
 			drawText();
+
+			if(board.mustReEnter(1) && isWhite) {
+				arrowSprite.draw(batch);
+			}
+
 		batch.end();
 
 		if(selector.getY() != 0 && selector.getX() != 0) {
@@ -151,34 +170,28 @@ public class bgAI extends ApplicationAdapter {
 	public void update() {
 		if(board.checkWinner() == 0) {
 
-			if(fromSelected && toSelected) {
+			if(fromSelected && toSelected && isWhite) {
 
 				if(fromIndex != 25 && fromIndex != 26 && fromIndex != 27
 				&& fromIndex != 24 && dices.contains(Math.abs(fromIndex - toIndex))) {
 					int current = dices.indexOf(Math.abs(fromIndex - toIndex));
 					int currentDice = dices.get(current);
 
-					if((board.getLogicBoard()[fromIndex] < 0 && !isWhite && board.move(fromIndex, toIndex, currentDice)
-							|| (board.getLogicBoard()[fromIndex] > 0 && isWhite && board.move(fromIndex, toIndex, currentDice)))) {
+					if((board.getLogicBoard()[fromIndex] > 0 && board.move(fromIndex, toIndex, currentDice))) {
 
 						currentlyPlayedDice = dices.get(current);
 
 						dices.remove(current);
-					} else {
-						System.out.println("NOT YOUR TURN.");
 					}
-				} else if((fromIndex == 24 || fromIndex == 25) && ((dices.contains(Math.abs(toIndex + 1)) && isWhite)
-						|| (dices.contains(Math.abs(24 - toIndex)) && !isWhite))) {
+				} else if((fromIndex == 24 || fromIndex == 25) && ((dices.contains(Math.abs(toIndex + 1))))) {
 
 					int current = 0;
 
 					if(isWhite) { current = dices.indexOf(Math.abs(toIndex + 1)); }
-					else { current = dices.indexOf(Math.abs(24 - toIndex)); }
 
 					int currentDice = dices.get(current);
 
-					if((!isWhite  && board.canReEnter(-1, dices)
-							|| (isWhite && board.canReEnter(1, dices)))) {
+					if((isWhite && board.canReEnter(1, dices))) {
 
 						System.out.println("board.reenter(" + fromIndex + ", "+ toIndex + ", " + currentDice + ")");
 						if(board.reenter(fromIndex, toIndex, currentDice)) {
@@ -200,21 +213,9 @@ public class bgAI extends ApplicationAdapter {
 						currentlyPlayedDice = 0;
 					}
 
-				} else if((toIndex == 26 && board.canBearoff(1)) || (toIndex == 27 && board.canBearoff(-1))) { // bear-off move
+				} else if((toIndex == 26 && board.canBearoff(1) && isWhite)) { // bear-off move
 
-					if(toIndex == 27 && fromIndex < 6 && !isWhite /*&& dices.contains(fromIndex + 1)*/ ) {
-
-						if(board.bearoff(fromIndex, toIndex)) {
-							//currentlyPlayedDice = dices.get(dices.indexOf(fromIndex + 1));
-							currentlyPlayedDice = dices.get(0);
-
-							//dices.remove(dices.indexOf(fromIndex + 1));
-							dices.remove(0);
-						} else {
-							System.out.println("CANT BEAROFF (BLACK)");
-						}
-
-					} else if(toIndex == 26 && fromIndex >= 18 && isWhite /*&& dices.contains(24 - fromIndex)*/) {
+					if(toIndex == 26 && fromIndex >= 18 && isWhite /*&& dices.contains(24 - fromIndex)*/) {
 
 						if(board.bearoff(fromIndex, toIndex)) {
 							//currentlyPlayedDice = dices.get(dices.indexOf(24 - fromIndex));
@@ -240,21 +241,85 @@ public class bgAI extends ApplicationAdapter {
 
 				reset();
 				board.placeCheckers();
+			} else if(!isWhite) { // BLACK = AI
+
+				ai = new AI(board);
+
+				// roll dice
+				if(!isDiceRolled) {
+					for(int i = 0; i < dices.size(); i++) { dices.remove(i); }
+
+					dice.throwDices();
+					board.generatePossibleMoves(dice.getDices());
+					dices = board.possibleMoves;
+
+					System.out.println("Dices: " + dices.get(0) + ", " + dices.get(1));
+
+					isDiceRolled = true;
+
+					try { Thread.sleep(1500); } catch (Exception e) { }
+				}
+
+				// make all moves
+				System.out.println("++ bgAI : DICE SIZE = " + dices.size());
+
+				int playedDice = ai.thinkPlay(dices);
+
+				try { Thread.sleep(1500); } catch (Exception e) { }
+
+				if(playedDice == -1) {
+					System.out.println("++ bgAI : AI CANNOT MOVE");
+
+					// clear when AI move ended
+					for(int j = 0; j < dices.size(); j++) { dices.remove(j); }
+
+					isWhite = !isWhite;
+					isDiceRolled = false;
+					currentlyPlayedDice = 0;
+					ai.dispose();
+
+
+
+				} else {
+					System.out.println("++ bgAI : AI PLAYED DICE " + playedDice);
+
+					currentlyPlayedDice = playedDice;
+					// remove played die
+
+					System.out.println("++ bgAI : CURRENT/REMOVED DICE INDEX " + dices.indexOf(playedDice));
+
+					dices.remove(dices.indexOf(playedDice));
+				}
+
+				board.placeCheckers();
+
+				// clear when AI move ended
+				if(dices.size() == 0) {
+					isWhite = !isWhite;
+					isDiceRolled = false;
+					currentlyPlayedDice = 0;
+					ai.dispose();
+				}
 			}
-		} else {
+		} else if(isPlaying) {
 			if(board.checkWinner() == 1) {
 				System.out.println("WINNER: WHITE!");
+				JOptionPane.showMessageDialog(new JFrame(), "YOU WON!");
 			} else {
 				System.out.println("WINNER: BLACK!");
+				JOptionPane.showMessageDialog(new JFrame(), "YOU LOSE.");
 			}
+
+			isPlaying = false;
 		}
 	}
 
 	public void drawText() {
 		// text
 		font.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-		font.draw(batch, isWhite ? "WHITE'S TURN" : "BLACK'S TURN", 270, 635);
-		if(!isDiceRolled) { font.draw(batch, "(ROLL THE DICE!)", 410, 635); }
+		font.draw(batch, isWhite ? "WHITE'S TURN" : "BG-AI'S TURN", 270, 635);
+		if(!isDiceRolled && isWhite) { font.draw(batch, "(ROLL THE DICE!)", 410, 635); }
+		if(!isDiceRolled && !isWhite) { font.draw(batch, "(AI IS PLAYING.)", 410, 635); }
 		if(isDiceRolled) { font.draw(batch, "(LAST PLAYED: " + (currentlyPlayedDice == 0 ? "NOTHING" : currentlyPlayedDice) + ")", 410, 635); }
 
 		// captured
@@ -272,6 +337,12 @@ public class bgAI extends ApplicationAdapter {
 		font.draw(batch, "" + board.getLogicBoard()[board.BLACK_BEAROFF_FIELD], 726, 145);
 	}
 
+	public void drawDice() {
+		board.draw(batch);
+		dice.getFirstSprite().draw(batch);
+		dice.getSecondSprite().draw(batch);
+	}
+
 	public void possibilityCheck() {
 
 		int color = 0;
@@ -280,9 +351,7 @@ public class bgAI extends ApplicationAdapter {
 		if(isDiceRolled) {
 			if(board.canBearoff(1)) {
 				System.out.println("WHITE PLAYER CAN BEAROFF");
-			} else if(board.canBearoff(-1)) {
-				System.out.println("BLACK PLAYER CAN BEAROFF");
-			} else if(board.mustReEnter(color)) {
+			} else if (board.mustReEnter(color)) {
 				if(!board.canReEnter(color, dices)) {
 					System.out.println("REENTER NOT POSSIBLE. SWITCHING PLAYER.");
 
