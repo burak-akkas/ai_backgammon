@@ -6,6 +6,8 @@ Backgammon playing AI implemented(*) with Java and libGDX
 - 06/06/2016 - Restructured and Cleaned
 - 07/06/2016 - General rules implemented
 - 08/06/2016 - AI implementation started
+- 10/06/2016 - AI implemented
+- 11/06/2016 - User Tests
 
 ## Instructions
 - Click anywhere to roll the dice.
